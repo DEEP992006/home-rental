@@ -1,17 +1,21 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
-import { getCurrentUser } from '@/lib/auth';
-import { FeaturesSection } from '@/components/features-section';
-import { HowItWorks } from '@/components/how-it-works';
-import { Footer } from '@/components/footer';
-import Image from 'next/image';
-import { ArrowRight } from 'lucide-react';
+import { Navbar } from "@/components/navbar"
+import { PropertyCard } from "@/components/property-card"
+import { FeaturesSection } from "@/components/features-section"
+import { HowItWorks } from "@/components/how-it-works"
+import { Footer } from "@/components/footer"
+import { Button } from "@/components/ui/button"
+import Image from "next/image"
+import { getCurrentUser } from "@/lib/auth"
+import Link from "next/link"
+import { ArrowRight } from "lucide-react"
 
-export default async function HomePage() {
-  const user = await getCurrentUser();
+export default async function LandingPage() {
+  const user = await getCurrentUser()
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <Navbar />
+
       <main className="flex-1">
         {/* Hero Section - "Artifact" Style with large Rust background */}
         <section className="relative bg-primary text-primary-foreground pt-28 pb-20 md:pt-40 md:pb-32 px-6 overflow-hidden rounded-b-[3rem]">
@@ -30,14 +34,12 @@ export default async function HomePage() {
                 {!user ? (
                   <div className="bg-white p-2 pl-6 rounded-full inline-flex items-center w-full max-w-md shadow-2xl">
                     <div className="flex-1 text-gray-500 text-lg">Where to?</div>
-                    <Link href="/explore">
-                      <Button
-                        size="lg"
-                        className="rounded-full px-8 h-12 bg-black text-white hover:bg-gray-900 font-medium"
-                      >
-                        Search
-                      </Button>
-                    </Link>
+                    <Button
+                      size="lg"
+                      className="rounded-full px-8 h-12 bg-black text-white hover:bg-gray-900 font-medium"
+                    >
+                      Search
+                    </Button>
                   </div>
                 ) : (
                   <div className="flex flex-wrap gap-4">
@@ -50,7 +52,7 @@ export default async function HomePage() {
                       </Button>
                     </Link>
                     {user.role === "OWNER" && (
-                      <Link href="/user/add-property">
+                      <Link href="/owner/add-property">
                         <Button
                           size="lg"
                           variant="outline"
@@ -90,7 +92,7 @@ export default async function HomePage() {
                 {user.role === "OWNER" && (
                   <>
                     <Link
-                      href="/user/my-properties"
+                      href="/owner/my-properties"
                       className="group bg-card border border-border p-8 rounded-xl hover:border-primary transition-colors"
                     >
                       <h3 className="text-2xl font-serif mb-2 group-hover:text-primary transition-colors">
@@ -102,7 +104,7 @@ export default async function HomePage() {
                       </div>
                     </Link>
                     <Link
-                      href="/user/add-property"
+                      href="/owner/add-property"
                       className="group bg-card border border-border p-8 rounded-xl hover:border-primary transition-colors"
                     >
                       <h3 className="text-2xl font-serif mb-2 group-hover:text-primary transition-colors">Add New</h3>
@@ -112,19 +114,6 @@ export default async function HomePage() {
                       </div>
                     </Link>
                   </>
-                )}
-
-                {user.role === "ADMIN" && (
-                  <Link
-                    href="/admin/properties"
-                    className="group bg-card border border-border p-8 rounded-xl hover:border-primary transition-colors"
-                  >
-                    <h3 className="text-2xl font-serif mb-2 group-hover:text-primary transition-colors">Admin Panel</h3>
-                    <p className="text-muted-foreground mb-4">Review and verify properties.</p>
-                    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                      <ArrowRight className="w-5 h-5" />
-                    </div>
-                  </Link>
                 )}
 
                 <Link
@@ -144,6 +133,61 @@ export default async function HomePage() {
 
         {/* How It Works - Editorial Style */}
         <HowItWorks />
+
+        {/* Featured Properties - Editorial Grid */}
+        <section className="container mx-auto px-6 py-24">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+            <div className="max-w-xl">
+              <h2 className="text-4xl md:text-5xl font-serif mb-4 text-foreground">Curated Collections</h2>
+              <p className="text-muted-foreground text-lg">
+                Hand-picked homes verified for quality, comfort, and style.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              className="rounded-full border-foreground/20 hover:bg-foreground hover:text-background bg-transparent"
+            >
+              View all collections
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <PropertyCard
+              image="/modern-villa-california.jpg"
+              title="Entire villa in Malibu"
+              location="Malibu, CA"
+              rating={4.95}
+              price={450}
+              dates="Oct 22 - 27"
+              isGuestFavorite={true}
+            />
+            <PropertyCard
+              image="/cozy-cabin-alps.jpg"
+              title="Cozy chalet"
+              location="Chamonix, FR"
+              rating={4.88}
+              price={210}
+              dates="Nov 5 - 10"
+            />
+            <PropertyCard
+              image="/minimalist-apartment-tokyo.jpg"
+              title="Modern loft"
+              location="Tokyo, JP"
+              rating={4.92}
+              price={135}
+              dates="Dec 12 - 17"
+              isGuestFavorite={true}
+            />
+            <PropertyCard
+              image="/luxury-penthouse-new-york.jpg"
+              title="Penthouse"
+              location="New York, NY"
+              rating={4.85}
+              price={620}
+              dates="Jan 15 - 20"
+            />
+          </div>
+        </section>
 
         {/* Features - Minimalist */}
         <FeaturesSection />
@@ -183,5 +227,5 @@ export default async function HomePage() {
 
       <Footer />
     </div>
-  );
+  )
 }

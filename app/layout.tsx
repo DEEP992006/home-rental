@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Navbar } from "@/components/Navbar";
 import "./globals.css";
@@ -14,9 +14,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const playfair = Playfair_Display({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+
 export const metadata: Metadata = {
-  title: "Home Rental",
-  description: "Find your perfect home rental",
+  title: "Home Rental - Local Living",
+  description: "Experience genuine local homes for a fraction of the cost",
 };
 
 export default function RootLayout({
@@ -28,7 +35,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased`}
         >
           <Navbar />
           {children}

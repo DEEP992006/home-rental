@@ -7,9 +7,10 @@ import { createProperty, type PropertyFormData } from '@/app/actions/property';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
+import { BottomNavigation } from '@/components/BottomNavigation';
 import { UploadButton } from '@uploadthing/react';
 import type { OurFileRouter } from '@/app/api/uploadthing/core';
-import { X } from 'lucide-react';
+import { X, Home, MapPin, Phone, Sparkles, Image as ImageIcon, ChevronLeft, Check } from 'lucide-react';
 
 const COMMON_AMENITIES = [
   'WiFi',
@@ -24,12 +25,17 @@ const COMMON_AMENITIES = [
   'Gym',
 ];
 
-/**
- * Add Property Page - USER can upload property for verification
- * Status flow: User uploads → PENDING_ADMIN_REVIEW → Admin assigns verifier → VERIFICATION_IN_PROGRESS → Admin reviews → LIVE or REJECTED
- */
+const STEPS = [
+  { id: 1, title: 'Basic Info', icon: Home },
+  { id: 2, title: 'Details', icon: MapPin },
+  { id: 3, title: 'Contact', icon: Phone },
+  { id: 4, title: 'Amenities', icon: Sparkles },
+  { id: 5, title: 'Photos', icon: ImageIcon },
+];
+
 export default function AddPropertyPage() {
   const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
@@ -39,6 +45,8 @@ export default function AddPropertyPage() {
     register,
     handleSubmit,
     formState: { errors },
+    trigger,
+    getValues,
   } = useForm<PropertyFormData>();
 
   const toggleAmenity = (amenity: string) => {
@@ -53,11 +61,48 @@ export default function AddPropertyPage() {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const onSubmit = async (data: PropertyFormData) => {
-    if (images.length === 0) {
-      setError('Please upload at least one image');
-      return;
+  const validateStep = async (step: number): Promise<boolean> => {
+    switch (step) {
+      case 1:
+        return await trigger(['title', 'description']);
+      case 2:
+        return await trigger(['propertyType', 'address', 'rent']);
+      case 3:
+        return await trigger(['ownerContact']);
+      case 4:
+        return true; // Amenities are optional
+      case 5:
+        if (images.length === 0) {
+          setError('Please upload at least one image');
+          return false;
+        }
+        setError('');
+        return true;
+      default:
+        return true;
     }
+  };
+
+  const handleNext = async () => {
+    const isValid = await validateStep(currentStep);
+    if (isValid && currentStep < 5) {
+      setCurrentStep(currentStep + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      router.back();
+    }
+  };
+
+  const onSubmit = async (data: PropertyFormData) => {
+    const isValid = await validateStep(5);
+    if (!isValid) return;
 
     setLoading(true);
     setError('');
@@ -77,248 +122,399 @@ export default function AddPropertyPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-2">Add New Property</h1>
-      <p className="text-gray-600 mb-8">
-        Submit your property for admin verification. You'll be contacted for verification.
-      </p>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Property Title *
-          </label>
-          <Input
-            {...register('title', { required: 'Title is required' })}
-            placeholder="e.g., Spacious 2BHK Apartment"
-          />
-          {errors.title && (
-            <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
-          )}
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Description *
-          </label>
-          <Textarea
-            {...register('description', { required: 'Description is required' })}
-            placeholder="Describe your property..."
-            rows={5}
-          />
-          {errors.description && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.description.message}
-            </p>
-          )}
-        </div>
-
-        {/* Property Type */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Property Type *
-          </label>
-          <select
-            {...register('propertyType', { required: 'Property type is required' })}
-            className="w-full h-10 rounded-md border border-gray-300 bg-white px-3 py-2"
-          >
-            <option value="">Select type</option>
-            <option value="room">Room</option>
-            <option value="flat">Flat</option>
-            <option value="house">House</option>
-          </select>
-          {errors.propertyType && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.propertyType.message}
-            </p>
-          )}
-        </div>
-
-        {/* Address */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Address *</label>
-          <Textarea
-            {...register('address', { required: 'Address is required' })}
-            placeholder="Full address..."
-            rows={3}
-          />
-          {errors.address && (
-            <p className="text-red-500 text-sm mt-1">{errors.address.message}</p>
-          )}
-        </div>
-
-        {/* Location Coordinates */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Latitude (Optional)
-            </label>
-            <Input
-              type="number"
-              step="any"
-              {...register('locationLat')}
-              placeholder="e.g., 28.6139"
-            />
+    <div className="min-h-screen bg-[#FFFAF5]">
+      {/* Fixed Header - Desktop stays same, mobile optimized */}
+      <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-100 z-50">
+        <div className="max-w-lg mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <button
+              onClick={handleBack}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors -ml-2"
+            >
+              <ChevronLeft className="w-6 h-6 text-gray-700" />
+            </button>
+            <div className="text-center flex-1">
+              <h1 className="text-lg font-bold text-gray-900">List Property</h1>
+              <p className="text-xs text-gray-500">Step {currentStep} of 5</p>
+            </div>
+            <div className="w-10" />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Longitude (Optional)
-            </label>
-            <Input
-              type="number"
-              step="any"
-              {...register('locationLng')}
-              placeholder="e.g., 77.2090"
-            />
-          </div>
-        </div>
 
-        {/* Rent */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Monthly Rent (₹) *
-          </label>
-          <Input
-            type="number"
-            {...register('rent', {
-              required: 'Rent is required',
-              min: { value: 0, message: 'Rent must be positive' },
-              valueAsNumber: true,
-            })}
-            placeholder="e.g., 15000"
-          />
-          {errors.rent && (
-            <p className="text-red-500 text-sm mt-1">{errors.rent.message}</p>
-          )}
-        </div>
-
-        {/* Owner Contact - REQUIRED for verification */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Contact Number * (Required for verification)
-          </label>
-          <Input
-            {...register('ownerContact', {
-              required: 'Contact number is required for property verification',
-            })}
-            placeholder="e.g., +91 9876543210"
-          />
-          {errors.ownerContact && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.ownerContact.message}
-            </p>
-          )}
-          <p className="text-sm text-gray-500 mt-1">
-            Our verification team will contact you on this number
-          </p>
-        </div>
-
-        {/* Amenities */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Amenities</label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {COMMON_AMENITIES.map((amenity) => (
-              <button
-                key={amenity}
-                type="button"
-                onClick={() => toggleAmenity(amenity)}
-                className={`px-4 py-2 rounded-md border transition-colors ${
-                  selectedAmenities.includes(amenity)
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                }`}
+          {/* Progress Bar - Mobile Optimized */}
+          <div className="flex gap-1">
+            {STEPS.map((step) => (
+              <div
+                key={step.id}
+                className="flex-1 h-1 rounded-full bg-gray-100 overflow-hidden"
               >
-                {amenity}
-              </button>
+                <div
+                  className={`h-full transition-all duration-300 ${
+                    step.id <= currentStep ? 'bg-[#E86A33]' : 'bg-transparent'
+                  }`}
+                />
+              </div>
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Images Upload */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Property Images *
-          </label>
-          <div className="space-y-4">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition-colors bg-gray-50">
-              <UploadButton<OurFileRouter, 'propertyImages'>
-                endpoint="propertyImages"
-                onClientUploadComplete={(res) => {
-                  const urls = res.map((r) => r.url);
-                  setImages((prev) => [...prev, ...urls]);
-                }}
-                onUploadError={(error: Error) => {
-                  setError(`Upload failed: ${error.message}`);
-                }}
-                appearance={{
-                  button: "bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg",
-                  container: "flex flex-col items-center gap-3",
-                  allowedContent: "text-sm text-gray-600 mt-2"
-                }}
-                content={{
-                  button({ ready }) {
-                    if (ready) return (
-                      <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        Upload Property Images
-                      </div>
-                    );
-                    return "Getting ready...";
-                  },
-                  allowedContent({ ready, fileTypes }) {
-                    if (!ready) return "Checking...";
-                    return `Supported: ${fileTypes.join(", ")}`;
-                  },
-                }}
-              />
-            </div>
-
-            {images.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {images.map((url, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={url}
-                      alt={`Property ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-md"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
+      {/* Content - Mobile Optimized with Desktop Support */}
+      <div className="max-w-lg mx-auto px-4 pt-28 pb-32 md:pb-12">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Step 1: Basic Information */}
+          {currentStep === 1 && (
+            <div className="animate-fadeIn">
+              <div className="mb-6 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-[#FFF0E6] rounded-2xl mb-4">
+                  <Home className="w-8 h-8 text-[#E86A33]" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Basic Information</h2>
+                <p className="text-sm text-gray-500">Tell us about your property</p>
               </div>
+
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Property Title <span className="text-[#E86A33]">*</span>
+                  </label>
+                  <Input
+                    {...register('title', { required: 'Title is required' })}
+                    placeholder="e.g., Spacious 2BHK Apartment"
+                    className="h-14 text-base bg-[#FFFAF5] border-gray-200 focus:border-[#E86A33] focus:ring-[#E86A33]/20"
+                  />
+                  {errors.title && (
+                    <p className="text-[#E86A33] text-sm mt-2 flex items-center gap-1">
+                      <span className="text-xs">⚠</span> {errors.title.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Description <span className="text-[#E86A33]">*</span>
+                  </label>
+                  <Textarea
+                    {...register('description', { required: 'Description is required' })}
+                    placeholder="Describe your property in detail..."
+                    rows={6}
+                    className="text-base resize-none bg-[#FFFAF5] border-gray-200 focus:border-[#E86A33] focus:ring-[#E86A33]/20"
+                  />
+                  {errors.description && (
+                    <p className="text-[#E86A33] text-sm mt-2 flex items-center gap-1">
+                      <span className="text-xs">⚠</span> {errors.description.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Property Details */}
+          {currentStep === 2 && (
+            <div className="animate-fadeIn">
+              <div className="mb-6 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-[#FFF0E6] rounded-2xl mb-4">
+                  <MapPin className="w-8 h-8 text-[#E86A33]" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Property Details</h2>
+                <p className="text-sm text-gray-500">Location and pricing information</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Property Type <span className="text-[#E86A33]">*</span>
+                  </label>
+                  <select
+                    {...register('propertyType', { required: 'Property type is required' })}
+                    className="w-full h-14 px-4 border border-gray-200 rounded-xl bg-[#FFFAF5] text-gray-900 focus:border-[#E86A33] focus:ring-2 focus:ring-[#E86A33]/20 transition-all text-base"
+                  >
+                    <option value="">Select property type</option>
+                    <option value="room">🚪 Room</option>
+                    <option value="flat">🏢 Flat/Apartment</option>
+                    <option value="house">🏡 House</option>
+                  </select>
+                  {errors.propertyType && (
+                    <p className="text-[#E86A33] text-sm mt-2 flex items-center gap-1">
+                      <span className="text-xs">⚠</span> {errors.propertyType.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Complete Address <span className="text-[#E86A33]">*</span>
+                  </label>
+                  <Textarea
+                    {...register('address', { required: 'Address is required' })}
+                    placeholder="Street, Area, City, State, PIN Code"
+                    rows={4}
+                    className="text-base resize-none bg-[#FFFAF5] border-gray-200 focus:border-[#E86A33] focus:ring-[#E86A33]/20"
+                  />
+                  {errors.address && (
+                    <p className="text-[#E86A33] text-sm mt-2 flex items-center gap-1">
+                      <span className="text-xs">⚠</span> {errors.address.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Monthly Rent <span className="text-[#E86A33]">*</span>
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-base font-semibold">₹</span>
+                    <Input
+                      type="number"
+                      {...register('rent', {
+                        required: 'Rent is required',
+                        min: { value: 0, message: 'Rent must be positive' },
+                        valueAsNumber: true,
+                      })}
+                      placeholder="15000"
+                      className="h-14 text-base pl-10 bg-[#FFFAF5] border-gray-200 focus:border-[#E86A33] focus:ring-[#E86A33]/20"
+                    />
+                  </div>
+                  {errors.rent && (
+                    <p className="text-[#E86A33] text-sm mt-2 flex items-center gap-1">
+                      <span className="text-xs">⚠</span> {errors.rent.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Contact Information */}
+          {currentStep === 3 && (
+            <div className="animate-fadeIn">
+              <div className="mb-6 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-[#FFF0E6] rounded-2xl mb-4">
+                  <Phone className="w-8 h-8 text-[#E86A33]" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Contact Details</h2>
+                <p className="text-sm text-gray-500">How can renters reach you?</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Contact Number <span className="text-[#E86A33]">*</span>
+                  </label>
+                  <Input
+                    {...register('ownerContact', { required: 'Contact number is required' })}
+                    placeholder="+91 9876543210"
+                    className="h-14 text-base bg-[#FFFAF5] border-gray-200 focus:border-[#E86A33] focus:ring-[#E86A33]/20"
+                  />
+                  {errors.ownerContact && (
+                    <p className="text-[#E86A33] text-sm mt-2 flex items-center gap-1">
+                      <span className="text-xs">⚠</span> {errors.ownerContact.message}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-2">
+                    📱 This number will be visible to interested renters
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Amenities */}
+          {currentStep === 4 && (
+            <div className="animate-fadeIn">
+              <div className="mb-6 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-[#FFF0E6] rounded-2xl mb-4">
+                  <Sparkles className="w-8 h-8 text-[#E86A33]" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Amenities</h2>
+                <p className="text-sm text-gray-500">What does your property offer?</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div className="grid grid-cols-2 gap-3">
+                  {COMMON_AMENITIES.map((amenity) => (
+                    <button
+                      key={amenity}
+                      type="button"
+                      onClick={() => toggleAmenity(amenity)}
+                      className={`p-4 rounded-xl border-2 transition-all text-left font-medium relative ${
+                        selectedAmenities.includes(amenity)
+                          ? 'border-[#E86A33] bg-[#FFF0E6] text-[#E86A33]'
+                          : 'border-gray-200 bg-white text-gray-700 active:scale-95'
+                      }`}
+                    >
+                      {selectedAmenities.includes(amenity) && (
+                        <div className="absolute top-2 right-2 w-5 h-5 bg-[#E86A33] rounded-full flex items-center justify-center">
+                          <Check className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                      <span className="text-base">{amenity}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {selectedAmenities.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-gray-100">
+                    <p className="text-sm font-semibold text-gray-900 mb-3">
+                      {selectedAmenities.length} amenities selected
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedAmenities.map((amenity) => (
+                        <span
+                          key={amenity}
+                          className="px-4 py-2 bg-[#E86A33] text-white rounded-full text-sm font-medium"
+                        >
+                          {amenity}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Photos */}
+          {currentStep === 5 && (
+            <div className="animate-fadeIn">
+              <div className="mb-6 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-[#FFF0E6] rounded-2xl mb-4">
+                  <ImageIcon className="w-8 h-8 text-[#E86A33]" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Property Photos</h2>
+                <p className="text-sm text-gray-500">Add photos to attract renters</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div className="space-y-4">
+                  {images.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      {images.map((url, index) => (
+                        <div key={index} className="relative aspect-square rounded-xl overflow-hidden group border-2 border-gray-100">
+                          <img src={url} alt={`${index + 1}`} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-2 right-2 p-2 bg-white/95 text-[#E86A33] rounded-full shadow-lg active:scale-95 transition-transform"
+                          >
+                            <X size={18} />
+                          </button>
+                          {index === 0 && (
+                            <div className="absolute bottom-2 left-2 bg-[#E86A33] text-white px-3 py-1 rounded-full text-xs font-semibold">
+                              Cover
+                            </div>
+                          )}
+                        </div>
+                      ))}
+
+                      <div className="aspect-square border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center hover:border-[#E86A33] transition-colors active:scale-95">
+                        <UploadButton<OurFileRouter, 'propertyImages'>
+                          endpoint="propertyImages"
+                          onClientUploadComplete={(res) => {
+                            setImages((prev) => [...prev, ...res.map((r) => r.url)]);
+                          }}
+                          onUploadError={(error: Error) => setError(`Upload failed: ${error.message}`)}
+                          appearance={{
+                            button: "!bg-transparent !border-none !p-0 text-gray-400 hover:text-[#E86A33] text-4xl font-light",
+                            container: "w-full h-full flex items-center justify-center",
+                            allowedContent: "hidden"
+                          }}
+                          content={{ button: "+" }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-gray-200 rounded-xl p-12 text-center hover:border-[#E86A33] transition-colors">
+                      <ImageIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                      <UploadButton<OurFileRouter, 'propertyImages'>
+                        endpoint="propertyImages"
+                        onClientUploadComplete={(res) => {
+                          setImages((prev) => [...prev, ...res.map((r) => r.url)]);
+                        }}
+                        onUploadError={(error: Error) => setError(`Upload failed: ${error.message}`)}
+                        appearance={{
+                          button: "bg-[#E86A33] hover:bg-[#D25A23] text-white px-8 py-3.5 rounded-xl font-semibold text-base shadow-sm",
+                          allowedContent: "text-gray-500 text-sm mt-3"
+                        }}
+                      />
+                      <p className="text-xs text-gray-400 mt-4">Max 4MB per image • JPG, PNG</p>
+                    </div>
+                  )}
+                </div>
+
+                {error && (
+                  <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4">
+                    <p className="text-red-700 text-sm font-medium flex items-center gap-2">
+                      <span className="text-base">⚠</span> {error}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </form>
+      </div>
+
+      {/* Fixed Bottom Navigation - Mobile Optimized */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 md:hidden z-50">
+        <div className="max-w-lg mx-auto px-4 py-4">
+          {currentStep < 5 ? (
+            <Button
+              type="button"
+              onClick={handleNext}
+              className="w-full h-14 text-base font-semibold rounded-xl bg-[#E86A33] hover:bg-[#D25A23] text-white shadow-lg active:scale-98 transition-transform"
+            >
+              Continue
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={handleSubmit(onSubmit)}
+              disabled={loading}
+              className="w-full h-14 text-base font-semibold rounded-xl bg-[#E86A33] hover:bg-[#D25A23] text-white shadow-lg active:scale-98 transition-transform"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Submitting...
+                </span>
+              ) : (
+                'Submit for Verification'
+              )}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop Bottom Navigation */}
+      <div className="hidden md:block">
+        <div className="max-w-lg mx-auto px-4 pb-12">
+          <div className="flex gap-3">
+            {currentStep < 5 ? (
+              <Button
+                type="button"
+                onClick={handleNext}
+                className="flex-1 h-12 text-sm font-semibold rounded-xl bg-[#E86A33] hover:bg-[#D25A23] text-white shadow-sm"
+              >
+                Continue
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={handleSubmit(onSubmit)}
+                disabled={loading}
+                className="flex-1 h-12 text-sm font-semibold rounded-xl bg-[#E86A33] hover:bg-[#D25A23] text-white shadow-sm"
+              >
+                {loading ? 'Submitting...' : 'Submit for Verification'}
+              </Button>
             )}
           </div>
         </div>
-
-        {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-600 text-sm">{error}</p>
-          </div>
-        )}
-
-        <div className="flex gap-4">
-          <Button type="submit" disabled={loading} className="flex-1">
-            {loading ? 'Submitting...' : 'Submit for Verification'}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.back()}
-          >
-            Cancel
-          </Button>
-        </div>
-      </form>
+        <BottomNavigation />
+      </div>
     </div>
   );
 }
