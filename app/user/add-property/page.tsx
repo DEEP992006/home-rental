@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { UploadButton } from '@uploadthing/react';
 import type { OurFileRouter } from '@/app/api/uploadthing/core';
+import { CustomUploadButton } from '@/components/CustomUploadButton';
 import { X, Home, MapPin, Phone, Sparkles, Image as ImageIcon, ChevronLeft, Check } from 'lucide-react';
 
 const COMMON_AMENITIES = [
@@ -391,7 +392,7 @@ export default function AddPropertyPage() {
                     <div className="grid grid-cols-2 gap-3">
                       {images.map((url, index) => (
                         <div key={index} className="relative aspect-square rounded-xl overflow-hidden group border-2 border-gray-100">
-                          <img src={url} alt={`${index + 1}`} className="w-full h-full object-cover" />
+                          <img src={url} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
                           <button
                             type="button"
                             onClick={() => removeImage(index)}
@@ -407,37 +408,66 @@ export default function AddPropertyPage() {
                         </div>
                       ))}
 
-                      <div className="aspect-square border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center hover:border-[#E86A33] transition-colors active:scale-95">
-                        <UploadButton<OurFileRouter, 'propertyImages'>
-                          endpoint="propertyImages"
-                          onClientUploadComplete={(res) => {
-                            setImages((prev) => [...prev, ...res.map((r) => r.url)]);
+                      {/* Add More Button */}
+                      <div className="aspect-square border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center hover:border-[#E86A33] transition-all bg-gradient-to-br from-gray-50 to-white group">
+                        <CustomUploadButton
+                          onUploadComplete={(urls) => {
+                            setImages((prev) => [...prev, ...urls]);
                           }}
-                          onUploadError={(error: Error) => setError(`Upload failed: ${error.message}`)}
-                          appearance={{
-                            button: "!bg-transparent !border-none !p-0 text-gray-400 hover:text-[#E86A33] text-4xl font-light",
-                            container: "w-full h-full flex items-center justify-center",
-                            allowedContent: "hidden"
-                          }}
-                          content={{ button: "+" }}
-                        />
+                          onUploadError={(error) => setError(`Upload failed: ${error.message}`)}
+                        >
+                          {({ isUploading }) => (
+                            <div className="flex flex-col items-center justify-center gap-2 w-full h-full p-4">
+                              {isUploading ? (
+                                <>
+                                  <div className="w-12 h-12 border-4 border-gray-200 border-t-[#E86A33] rounded-full animate-spin" />
+                                  <span className="text-xs text-gray-500 font-medium">Uploading...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="w-12 h-12 bg-[#FFF0E6] rounded-full flex items-center justify-center group-hover:bg-[#E86A33] transition-colors">
+                                    <ImageIcon className="w-6 h-6 text-[#E86A33] group-hover:text-white transition-colors" />
+                                  </div>
+                                  <span className="text-xs text-gray-500 font-medium group-hover:text-[#E86A33] transition-colors">Add More</span>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </CustomUploadButton>
                       </div>
                     </div>
                   ) : (
-                    <div className="border-2 border-dashed border-gray-200 rounded-xl p-12 text-center hover:border-[#E86A33] transition-colors">
-                      <ImageIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                      <UploadButton<OurFileRouter, 'propertyImages'>
-                        endpoint="propertyImages"
-                        onClientUploadComplete={(res) => {
-                          setImages((prev) => [...prev, ...res.map((r) => r.url)]);
+                    <div className="border-2 border-dashed border-gray-200 rounded-xl overflow-hidden hover:border-[#E86A33] transition-all bg-gradient-to-br from-gray-50 to-white group">
+                      <CustomUploadButton
+                        onUploadComplete={(urls) => {
+                          setImages((prev) => [...prev, ...urls]);
                         }}
-                        onUploadError={(error: Error) => setError(`Upload failed: ${error.message}`)}
-                        appearance={{
-                          button: "bg-[#E86A33] hover:bg-[#D25A23] text-white px-8 py-3.5 rounded-xl font-semibold text-base shadow-sm",
-                          allowedContent: "text-gray-500 text-sm mt-3"
-                        }}
-                      />
-                      <p className="text-xs text-gray-400 mt-4">Max 4MB per image • JPG, PNG</p>
+                        onUploadError={(error) => setError(`Upload failed: ${error.message}`)}
+                      >
+                        {({ isUploading }) => (
+                          <div className="flex flex-col items-center justify-center w-full py-16 px-4">
+                            {isUploading ? (
+                              <>
+                                <div className="w-20 h-20 border-4 border-gray-200 border-t-[#E86A33] rounded-full animate-spin mb-4" />
+                                <h3 className="text-base font-semibold text-gray-900 mb-2">Uploading Photos...</h3>
+                                <p className="text-sm text-gray-500">Please wait</p>
+                              </>
+                            ) : (
+                              <>
+                                <div className="w-20 h-20 bg-[#FFF0E6] rounded-2xl flex items-center justify-center mb-4 group-hover:bg-[#E86A33] transition-all group-hover:scale-110">
+                                  <ImageIcon className="w-10 h-10 text-[#E86A33] group-hover:text-white transition-colors" />
+                                </div>
+                                <h3 className="text-base font-semibold text-gray-900 mb-2 group-hover:text-[#E86A33] transition-colors">Upload Property Photos</h3>
+                                <p className="text-sm text-gray-500 mb-4">Click to browse files</p>
+                                <div className="px-6 py-3 bg-[#E86A33] text-white rounded-lg font-semibold text-sm shadow-md group-hover:shadow-lg transition-all">
+                                  📸 Choose Photos
+                                </div>
+                                <p className="text-xs text-gray-400 mt-4">Max 4MB per image • JPG, PNG</p>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </CustomUploadButton>
                     </div>
                   )}
                 </div>

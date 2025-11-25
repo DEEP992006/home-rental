@@ -239,3 +239,65 @@
   transform: scale(0.95);
 }
 
+/* UploadThing Custom Styles - Hide all default content */
+.ut-button {
+  cursor: pointer !important;
+}
+
+.ut-button:focus-visible {
+  outline: none !important;
+  ring: 2px !important;
+  ring-offset: 2px !important;
+  ring-color: #E86A33 !important;
+}
+
+/* Hide default file input appearance completely */
+.ut-button input[type="file"] {
+  display: none !important;
+}
+
+/* Hide ALL default UploadThing text and content */
+.ut-allowed-content,
+.ut-label,
+.ut-button-label,
+[data-ut-element],
+[data-ut-element="button-text"],
+[data-ut-element="allowed-content"],
+.ut-ready .ut-label,
+.ut-ready span,
+.ut-uploading .ut-label,
+.ut-uploading span {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+}
+
+/* Only show our custom content */
+.ut-button > div {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: auto !important;
+  height: auto !important;
+  position: relative !important;
+}
+
+/* Loading spinner for upload button */
+.ut-button[data-state="uploading"] {
+  opacity: 0.75 !important;
+  cursor: wait !important;
+}
+
+/* Override any default UploadThing styles */
+.ut-uploading {
+  cursor: wait !important;
+}
+
+.ut-ready {
+  cursor: pointer !important;
+}
+
