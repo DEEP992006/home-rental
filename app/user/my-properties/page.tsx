@@ -192,7 +192,7 @@ export default async function MyPropertiesPage() {
                               </h3>
                               <p className="text-sm text-white/90 flex items-center gap-1">
                                 <span className="font-semibold">₹{property.rent?.toLocaleString()}</span>
-                                <span className="text-white/70">/month</span>
+                                <span className="text-white/70">/day</span>
                               </p>
                             </div>
                           </div>

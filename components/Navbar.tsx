@@ -18,8 +18,8 @@ export function Navbar() {
   const pathname = usePathname();
   
   // Hide navbar on mobile for explore page
-  const isExplorePage = pathname === '/explore';
-  const isLandingPage = pathname === '/';
+  const isExplorePage = pathname?.startsWith('/explore') || false;
+  const isLandingPage = pathname === '/' || false;
   const shouldHideOnMobile = isExplorePage;
   const shouldShowSidebar = isLandingPage;
 
@@ -104,7 +104,7 @@ export function Navbar() {
               href="/explore"
               onClick={() => setIsSidebarOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                pathname === '/explore' ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-secondary/50'
+                pathname?.startsWith('/explore') ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-secondary/50'
               }`}
             >
               <MapPin className="h-5 w-5" />
@@ -117,7 +117,7 @@ export function Navbar() {
                   href="/user/add-property"
                   onClick={() => setIsSidebarOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    pathname === '/user/add-property' ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-secondary/50'
+                    pathname?.startsWith('/user/add-property') ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-secondary/50'
                   }`}
                 >
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,7 +129,7 @@ export function Navbar() {
                   href="/user/my-properties"
                   onClick={() => setIsSidebarOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    pathname === '/user/my-properties' ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-secondary/50'
+                    pathname?.startsWith('/user/my-properties') ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-secondary/50'
                   }`}
                 >
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,7 +145,7 @@ export function Navbar() {
                 href="/admin/properties"
                 onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                  pathname === '/admin/properties' ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-secondary/50'
+                  pathname?.startsWith('/admin/properties') ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-secondary/50'
                 }`}
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,7 +198,7 @@ export function Navbar() {
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-background/90 backdrop-blur-md border-b border-border/40 ${
         shouldHideOnMobile ? 'hidden md:flex' : 'flex'
       }`}>
-        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="container mx-auto px-6 h-14 flex items-center justify-between">
           {/* Mobile Menu Button - Only on Landing Page */}
           {shouldShowSidebar && (
             <button

@@ -260,7 +260,7 @@ export default function AddPropertyPage() {
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Monthly Rent <span className="text-[#E86A33]">*</span>
+                    Daily Rent <span className="text-[#E86A33]">*</span>
                   </label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-base font-semibold">₹</span>

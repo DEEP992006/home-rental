@@ -153,7 +153,7 @@ export function ChatInterface({
           <div>
             <p className="font-medium">{chat.property.title}</p>
             <p className="text-sm text-gray-600">
-              ₹{chat.property.rent.toLocaleString()}/month
+              ₹{chat.property.rent.toLocaleString()}/day
             </p>
           </div>
         </div>

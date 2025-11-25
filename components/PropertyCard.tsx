@@ -26,11 +26,13 @@ type PropertyCardProps = {
 
 export function PropertyCard({ property, showStatus, isMobileView }: PropertyCardProps) {
   const [isLiked, setIsLiked] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const displayImages = (property.verifiedImages && property.verifiedImages.length > 0)
     ? property.verifiedImages 
     : (property.images || []);
+  
+  // Always show only the first image as poster
+  const posterImage = displayImages[0];
 
   // Extract city from address
   const addressParts = property.address.split(',').map(part => part.trim());
@@ -54,22 +56,6 @@ export function PropertyCard({ property, showStatus, isMobileView }: PropertyCar
     }
   };
 
-  const handlePrevImage = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => 
-      prev === 0 ? displayImages.length - 1 : prev - 1
-    );
-  };
-
-  const handleNextImage = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => 
-      prev === displayImages.length - 1 ? 0 : prev + 1
-    );
-  };
-
   return (
     <Link href={`/property/${property.id}`}>
       <div className="group cursor-pointer flex flex-col w-full h-full transition-all duration-300 hover:scale-[1.02]">
@@ -77,9 +63,9 @@ export function PropertyCard({ property, showStatus, isMobileView }: PropertyCar
         <div className={`relative overflow-hidden bg-gradient-to-br from-muted to-muted/50 shadow-md group-hover:shadow-2xl transition-all duration-300 ${
           isMobileView ? 'aspect-[4/3] rounded-lg' : 'aspect-[4/3] rounded-2xl'
         }`}>
-          {displayImages[currentImageIndex] ? (
+          {posterImage ? (
             <Image
-              src={displayImages[currentImageIndex]}
+              src={posterImage}
               alt={property.title}
               fill
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
@@ -136,55 +122,6 @@ export function PropertyCard({ property, showStatus, isMobileView }: PropertyCar
               }`} 
             />
           </button>
-
-          {/* Image Navigation Dots */}
-          {displayImages.length > 1 && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-              {displayImages.slice(0, 5).map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setCurrentImageIndex(idx);
-                  }}
-                  className={`transition-all duration-300 rounded-full ${
-                    idx === currentImageIndex 
-                      ? 'w-6 h-2 bg-white' 
-                      : 'w-2 h-2 bg-white/60 hover:bg-white/80'
-                  }`}
-                  aria-label={`View image ${idx + 1}`}
-                />
-              ))}
-              {displayImages.length > 5 && (
-                <div className="w-2 h-2 rounded-full bg-white/40" />
-              )}
-            </div>
-          )}
-
-          {/* Image Navigation Arrows (visible on hover) - Hidden on mobile */}
-          {displayImages.length > 1 && !isMobileView && (
-            <>
-              <button
-                onClick={handlePrevImage}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-white hover:scale-110"
-                aria-label="Previous image"
-              >
-                <svg className="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button
-                onClick={handleNextImage}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-white hover:scale-110"
-                aria-label="Next image"
-              >
-                <svg className="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </>
-          )}
         </div>
 
         {/* Content */}
@@ -234,7 +171,7 @@ export function PropertyCard({ property, showStatus, isMobileView }: PropertyCar
                 <IndianRupee className={isMobileView ? 'h-3 w-3' : 'h-4 w-4'} />
                 {property.rent.toLocaleString('en-IN')}
               </span>
-              <span className={`text-muted-foreground font-medium ${isMobileView ? 'text-[10px]' : 'text-sm'}`}>/month</span>
+              <span className={`text-muted-foreground font-medium ${isMobileView ? 'text-[10px]' : 'text-sm'}`}>/day</span>
             </div>
             {!isMobileView && (
               <p className="text-xs text-muted-foreground mt-0.5">

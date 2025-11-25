@@ -255,7 +255,7 @@ export default function AdminEditPropertyPage({
             <p className="font-semibold text-lg capitalize">{property.propertyType}</p>
           </div>
           <div>
-            <p className="text-xs text-gray-600 mb-1">Monthly Rent</p>
+            <p className="text-xs text-gray-600 mb-1">Daily Rent</p>
             <p className="font-semibold text-lg text-green-700">₹{property.rent.toLocaleString()}</p>
           </div>
           <div>
@@ -307,7 +307,7 @@ export default function AdminEditPropertyPage({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Monthly Rent (₹)</label>
+            <label className="block text-sm font-medium mb-2">Daily Rent (₹)</label>
             {isEditing ? (
               <Input type="number" value={rent} onChange={(e) => setRent(Number(e.target.value))} placeholder="10000" />
             ) : (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, TouchEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { startChat } from '@/app/actions/chat';
 import { Button } from '@/components/ui/Button';
@@ -60,11 +60,38 @@ export function PropertyDetailClient({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   const displayImages =
     (property.verifiedImages && property.verifiedImages.length > 0)
       ? property.verifiedImages
       : (property.images || []);
+
+  const handleTouchStart = (e: TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!displayImages || displayImages.length <= 1) return;
+    
+    const swipeThreshold = 50;
+    const diff = touchStartX.current - touchEndX.current;
+
+    if (Math.abs(diff) > swipeThreshold) {
+      if (diff > 0) {
+        // Swiped left - next image
+        setCurrentImageIndex((prev) => (prev < displayImages.length - 1 ? prev + 1 : 0));
+      } else {
+        // Swiped right - previous image
+        setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : displayImages.length - 1));
+      }
+    }
+  };
 
   const handleStartChat = async () => {
     if (!currentUser) {
@@ -106,22 +133,22 @@ export function PropertyDetailClient({
   return (
     <div className="min-h-screen bg-[#FFFAF5]">
       {/* Mobile Header - Fixed */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
-        <div className="flex items-center justify-between px-4 py-3">
+      <div className="md:hidden fixed top-0 left-0 right-0 h-14 z-50 bg-white/98 backdrop-blur-md border-b border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between px-3 h-full safe-top">
           <button
             onClick={() => router.back()}
-            className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors active:scale-95"
+            className="p-2.5 -ml-1 hover:bg-gray-100 rounded-full transition-all active:scale-90 touch-manipulation"
           >
-            <ChevronLeft className="w-6 h-6 text-gray-700" />
+            <ChevronLeft className="w-6 h-6 text-gray-800" />
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               onClick={handleShare}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors active:scale-95"
+              className="p-2.5 hover:bg-gray-100 rounded-full transition-all active:scale-90 touch-manipulation"
             >
               <Share2 className="w-5 h-5 text-gray-700" />
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors active:scale-95">
+            <button className="p-2.5 hover:bg-gray-100 rounded-full transition-all active:scale-90 touch-manipulation">
               <Heart className="w-5 h-5 text-gray-700" />
             </button>
           </div>
@@ -131,13 +158,19 @@ export function PropertyDetailClient({
       {/* Content Container */}
       <div className="max-w-6xl mx-auto md:px-4 md:py-8">
         {/* Images Gallery - Mobile Full Width */}
-        <div className="relative md:mb-8 md:mt-0 mt-12">
-          <div className="relative h-80 md:h-[500px] bg-gray-200 md:rounded-2xl overflow-hidden">
+        <div className="relative md:mb-8 md:mt-0 mt-14">
+          <div 
+            className="relative h-[280px] md:h-[500px] bg-gradient-to-br from-gray-100 to-gray-200 md:rounded-2xl overflow-hidden"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
             {displayImages && displayImages[currentImageIndex] ? (
               <img
                 src={displayImages[currentImageIndex]}
                 alt={property.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover select-none"
+                draggable={false}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
@@ -145,40 +178,55 @@ export function PropertyDetailClient({
               </div>
             )}
             
-            {/* Image Counter - Mobile */}
+            {/* Image Counter - Enhanced */}
             {displayImages && displayImages.length > 0 && (
-              <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg">
+              <div className="absolute bottom-3 right-3 bg-black/75 backdrop-blur-md text-white px-3.5 py-1.5 rounded-full text-sm font-bold shadow-xl border border-white/10">
                 {currentImageIndex + 1} / {displayImages.length}
               </div>
             )}
 
-            {/* Verified Badge on Image - Mobile */}
+            {/* Verified Badge on Image - Enhanced */}
             {property.status === 'LIVE' && property.verifiedImages && property.verifiedImages.length > 0 && (
-              <div className="md:hidden absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-full text-xs font-semibold shadow-lg">
-                <ShieldCheck size={14} />
+              <div className="md:hidden absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-full text-xs font-bold shadow-lg border border-green-400">
+                <ShieldCheck size={15} />
                 Verified
               </div>
             )}
+
+            {/* Image Navigation Arrows - Mobile Swipe Hint */}
+            {displayImages && displayImages.length > 1 && (
+              <>
+                <button
+                  onClick={() => setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : displayImages.length - 1))}
+                  className="md:hidden absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/40 backdrop-blur-sm text-white rounded-full active:scale-90 transition-all touch-manipulation"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={() => setCurrentImageIndex((prev) => (prev < displayImages.length - 1 ? prev + 1 : 0))}
+                  className="md:hidden absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/40 backdrop-blur-sm text-white rounded-full active:scale-90 transition-all touch-manipulation rotate-180"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+              </>
+            )}
           </div>
 
-          {/* Thumbnail Gallery */}
+          {/* Thumbnail Gallery - Improved */}
           {displayImages && displayImages.length > 1 && (
-            <div className="px-4 md:px-0 mt-4">
-              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+            <div className="px-4 md:px-0 mt-3">
+              <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2">
                 {displayImages.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`relative flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden transition-all ${
+                    className={`relative flex-shrink-0 w-[68px] h-[68px] md:w-24 md:h-24 rounded-lg overflow-hidden transition-all duration-300 touch-manipulation border-2 ${
                       index === currentImageIndex
-                        ? 'ring-3 ring-[#E86A33] scale-105 shadow-md'
-                        : 'opacity-60 hover:opacity-100 active:scale-95'
+                        ? 'border-[#E86A33] scale-105 shadow-md opacity-100'
+                        : 'border-gray-200 opacity-70 hover:opacity-90 active:scale-95'
                     }`}
                   >
-                    <img src={img} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
-                    {index === currentImageIndex && (
-                      <div className="absolute inset-0 border-2 border-[#E86A33] rounded-xl" />
-                    )}
+                    <img src={img} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" draggable={false} />
                   </button>
                 ))}
               </div>
@@ -246,62 +294,65 @@ export function PropertyDetailClient({
         {/* Left Column - Property Details */}
         <div className="lg:col-span-2">
           {/* Header - Mobile Optimized */}
-          <div className="bg-white md:bg-transparent px-4 md:px-0 py-5 md:py-0 md:mb-6">
+          <div className="bg-white md:bg-transparent px-4 md:px-0 py-5 md:py-0 md:mb-6 border-b md:border-b-0 border-gray-100">
             <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{property.title}</h1>
-                <div className="flex items-center text-gray-600 text-sm md:text-base">
-                  <MapPin size={18} className="mr-2 flex-shrink-0" />
-                  <span className="line-clamp-1">{property.address}</span>
+              <div className="flex-1 min-w-0 pr-3">
+                <h1 className="text-[22px] md:text-3xl font-bold text-gray-900 mb-2.5 leading-tight tracking-tight">{property.title}</h1>
+                <div className="flex items-start text-gray-600 text-sm md:text-base mb-2">
+                  <MapPin size={17} className="mr-2 flex-shrink-0 text-[#E86A33] mt-0.5" />
+                  <span className="line-clamp-2 leading-relaxed">{property.address}</span>
                 </div>
               </div>
-              <span className="px-3 py-1.5 bg-[#FFF0E6] text-[#E86A33] border border-[#E86A33]/20 rounded-full text-xs font-semibold capitalize ml-3 flex-shrink-0">
+              <span className="px-3 py-1.5 bg-gradient-to-br from-[#FFF0E6] to-[#FFE5D1] text-[#E86A33] border border-[#E86A33]/30 rounded-full text-xs font-bold capitalize flex-shrink-0 shadow-sm">
                 {property.propertyType}
               </span>
             </div>
-            <div className="flex items-center">
-              <IndianRupee size={24} className="text-[#E86A33]" />
-              <span className="text-2xl md:text-3xl font-bold text-[#E86A33]">{property.rent.toLocaleString()}</span>
-              <span className="text-gray-500 text-sm ml-2">/month</span>
+            <div className="flex items-baseline gap-1 mt-1">
+              <IndianRupee size={24} className="text-[#E86A33]" strokeWidth={2.5} />
+              <span className="text-[28px] md:text-3xl font-bold text-[#E86A33] tracking-tight">{property.rent.toLocaleString()}</span>
+              <span className="text-gray-600 text-sm font-semibold">/day</span>
             </div>
           </div>
 
           {/* Mobile Status Badges */}
-          <div className="md:hidden px-4 mb-4">
+          <div className="md:hidden px-4 mb-3">
             {property.status !== 'LIVE' && (
               <>
                 {property.status === 'PENDING_ADMIN_REVIEW' && (
-                  <div className="flex items-start gap-3 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-2xl">
-                    <Clock className="text-yellow-600 flex-shrink-0 mt-0.5" size={20} />
+                  <div className="flex items-start gap-3 p-3.5 bg-gradient-to-br from-yellow-50 to-yellow-100/50 border border-yellow-300/50 rounded-xl shadow-sm">
+                    <Clock className="text-yellow-600 flex-shrink-0 mt-0.5" size={19} strokeWidth={2.5} />
                     <div>
-                      <p className="font-semibold text-yellow-800 text-sm">Pending Admin Review</p>
-                      <p className="text-xs text-yellow-700 mt-1">Waiting for verification</p>
+                      <p className="font-bold text-yellow-900 text-sm">Pending Admin Review</p>
+                      <p className="text-xs text-yellow-700 mt-0.5 leading-relaxed">Waiting for verification</p>
                     </div>
                   </div>
                 )}
                 {property.status === 'VERIFICATION_IN_PROGRESS' && (
-                  <div className="flex items-start gap-3 p-4 bg-blue-50 border-2 border-blue-200 rounded-2xl">
-                    <FileSearch className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
+                  <div className="flex items-start gap-3 p-3.5 bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-300/50 rounded-xl shadow-sm">
+                    <FileSearch className="text-blue-600 flex-shrink-0 mt-0.5" size={19} strokeWidth={2.5} />
                     <div>
-                      <p className="font-semibold text-blue-800 text-sm">Verification In Progress</p>
-                      <p className="text-xs text-blue-700 mt-1">
+                      <p className="font-bold text-blue-900 text-sm">Verification In Progress</p>
+                      <p className="text-xs text-blue-700 mt-0.5 leading-relaxed">
                         Our team is verifying your property
                       </p>
                       {property.estimatedDays && (
-                        <p className="text-xs text-blue-600 mt-2 font-semibold">
-                          ⏱ {property.estimatedDays} {property.estimatedDays === 1 ? 'day' : 'days'} remaining
-                        </p>
+                        <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-100 rounded-full">
+                          <Clock size={12} className="text-blue-600" />
+                          <p className="text-xs text-blue-700 font-bold">
+                            {property.estimatedDays} {property.estimatedDays === 1 ? 'day' : 'days'} remaining
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
                 )}
                 {property.status === 'REJECTED' && (
-                  <div className="flex items-start gap-3 p-4 bg-red-50 border-2 border-red-200 rounded-2xl">
-                    <XCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+                  <div className="flex items-start gap-3 p-3.5 bg-gradient-to-br from-red-50 to-red-100/50 border border-red-300/50 rounded-xl shadow-sm">
+                    <XCircle className="text-red-600 flex-shrink-0 mt-0.5" size={19} strokeWidth={2.5} />
                     <div>
-                      <p className="font-semibold text-red-800 text-sm">Property Rejected</p>
+                      <p className="font-bold text-red-900 text-sm">Property Rejected</p>
                       {property.rejectionReason && (
-                        <p className="text-xs text-red-700 mt-1">{property.rejectionReason}</p>
+                        <p className="text-xs text-red-700 mt-0.5 leading-relaxed">{property.rejectionReason}</p>
                       )}
                     </div>
                   </div>
@@ -311,27 +362,34 @@ export function PropertyDetailClient({
           </div>
 
           {/* Description */}
-          <div className="bg-white md:bg-transparent px-4 md:px-0 py-5 md:py-0 mb-4 md:mb-6">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3">Description</h2>
-            <p className="text-gray-700 text-sm md:text-base leading-relaxed whitespace-pre-line">
+          <div className="bg-white md:bg-transparent px-4 md:px-0 py-5 md:py-0 mb-2 md:mb-6">
+            <h2 className="text-[17px] md:text-xl font-bold text-gray-900 mb-3.5 flex items-center gap-2.5">
+              <div className="w-1 h-6 bg-[#E86A33] rounded-full md:hidden" />
+              Description
+            </h2>
+            <p className="text-gray-700 text-[15px] md:text-base leading-[1.7] whitespace-pre-line">
               {property.description}
             </p>
           </div>
 
           {/* Amenities */}
           {property.amenities && property.amenities.length > 0 && (
-            <div className="bg-white md:bg-transparent px-4 md:px-0 py-5 md:py-0 mb-4 md:mb-6">
-              <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Amenities</h2>
-              <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white md:bg-transparent px-4 md:px-0 py-5 md:py-0 mb-2 md:mb-6">
+              <h2 className="text-[17px] md:text-xl font-bold text-gray-900 mb-3.5 flex items-center gap-2.5">
+                <div className="w-1 h-6 bg-[#E86A33] rounded-full md:hidden" />
+                Amenities
+                <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">({property.amenities.length})</span>
+              </h2>
+              <div className="grid grid-cols-2 gap-2.5">
                 {property.amenities.map((amenity) => (
                   <div
                     key={amenity}
-                    className="flex items-center gap-2.5 p-3 bg-[#FFFAF5] border border-gray-200 rounded-xl text-gray-700 text-sm"
+                    className="flex items-center gap-2.5 p-3 bg-gradient-to-br from-white to-[#FFFAF5] md:bg-[#FFFAF5] border border-gray-200 rounded-xl text-gray-700 text-[13px] shadow-sm active:scale-[0.98] transition-transform touch-manipulation"
                   >
-                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <CheckCircle size={16} className="text-green-600" />
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-100 to-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <CheckCircle size={16} className="text-green-600" strokeWidth={2.5} />
                     </div>
-                    <span className="font-medium">{amenity}</span>
+                    <span className="font-bold leading-tight">{amenity}</span>
                   </div>
                 ))}
               </div>
@@ -341,18 +399,24 @@ export function PropertyDetailClient({
           {/* Map */}
           {property.locationLat && property.locationLng && (
             <div className="bg-white md:bg-transparent px-4 md:px-0 py-5 md:py-0 mb-4 md:mb-6">
-              <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Location</h2>
-              <div className="h-48 md:h-64 bg-gray-200 rounded-2xl flex items-center justify-center border border-gray-300">
-                <p className="text-gray-500 text-sm">
-                  Map: {property.locationLat}, {property.locationLng}
-                </p>
+              <h2 className="text-[17px] md:text-xl font-bold text-gray-900 mb-3.5 flex items-center gap-2.5">
+                <div className="w-1 h-6 bg-[#E86A33] rounded-full md:hidden" />
+                Location
+              </h2>
+              <div className="h-48 md:h-64 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center border border-gray-300 shadow-sm">
+                <div className="text-center">
+                  <MapPin size={32} className="text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-500 text-xs font-medium">
+                    {property.locationLat}, {property.locationLng}
+                  </p>
+                </div>
                 {/* You can integrate Google Maps or Mapbox here */}
               </div>
             </div>
           )}
 
           {/* Spacer for mobile bottom actions */}
-          <div className="h-32 md:hidden" />
+          <div className="h-24 md:hidden" />
         </div>
 
         {/* Right Column - Owner Contact - Desktop Only */}
@@ -430,53 +494,53 @@ export function PropertyDetailClient({
       </div>
 
       {/* Mobile Bottom Action Bar - Fixed */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 pb-safe">
-        <div className="px-4 py-4">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/98 backdrop-blur-md border-t border-gray-200 z-50 safe-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+        <div className="px-4 py-3.5">
           {/* Owner Info - Compact */}
           <div className="flex items-center gap-3 mb-3">
             {property.owner.profilePic ? (
               <img
                 src={property.owner.profilePic}
                 alt={property.owner.name || 'Owner'}
-                className="w-12 h-12 rounded-full object-cover"
+                className="w-12 h-12 rounded-full object-cover ring-2 ring-[#E86A33]/30 shadow-sm"
               />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-[#FFF0E6] flex items-center justify-center">
-                <span className="text-xl font-bold text-[#E86A33]">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FFF0E6] to-[#FFE5D1] flex items-center justify-center ring-2 ring-[#E86A33]/30 shadow-sm">
+                <span className="text-lg font-bold text-[#E86A33]">
                   {property.owner.name?.[0] || 'O'}
                 </span>
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 truncate">{property.owner.name || 'Unknown'}</p>
-              <p className="text-xs text-gray-500">Property Owner</p>
+              <p className="font-bold text-gray-900 truncate text-[15px] leading-tight">{property.owner.name || 'Unknown'}</p>
+              <p className="text-[11px] text-gray-500 font-semibold mt-0.5">Property Owner</p>
             </div>
             <div className="text-right">
-              <p className="text-lg font-bold text-[#E86A33]">₹{property.rent.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">/month</p>
+              <p className="text-lg font-bold text-[#E86A33] leading-tight">₹{property.rent.toLocaleString()}</p>
+              <p className="text-[10px] text-gray-500 font-semibold mt-0.5">/day</p>
             </div>
           </div>
 
           {/* Action Buttons - Mobile */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             {property.ownerContact && (
               <Button
                 onClick={handleCall}
                 variant="outline"
-                className="h-12 rounded-xl border-2 border-[#E86A33] text-[#E86A33] hover:bg-[#FFF0E6] active:scale-95 transition-transform font-semibold"
+                className="h-12 rounded-xl border-2 border-[#E86A33] text-[#E86A33] hover:bg-[#FFF0E6] active:scale-[0.97] transition-all font-bold shadow-sm text-[15px] touch-manipulation"
               >
-                <Phone size={20} className="mr-2" />
+                <Phone size={19} className="mr-1.5" strokeWidth={2.5} />
                 Call
               </Button>
             )}
             <Button
               onClick={handleStartChat}
               disabled={loading || currentUser?.id === property.owner.id}
-              className={`h-12 rounded-xl bg-[#E86A33] hover:bg-[#D25A23] text-white active:scale-95 transition-transform font-semibold shadow-lg ${
+              className={`h-12 rounded-xl bg-gradient-to-r from-[#E86A33] to-[#D25A23] hover:from-[#D25A23] hover:to-[#C14A13] text-white active:scale-[0.97] transition-all font-bold shadow-md text-[15px] touch-manipulation disabled:opacity-60 ${
                 property.ownerContact ? '' : 'col-span-2'
               }`}
             >
-              <MessageCircle size={20} className="mr-2" />
+              <MessageCircle size={19} className="mr-1.5" strokeWidth={2.5} />
               {currentUser?.id === property.owner.id
                 ? 'Your Property'
                 : loading
@@ -486,7 +550,7 @@ export function PropertyDetailClient({
           </div>
 
           {!currentUser && (
-            <p className="text-xs text-gray-500 mt-3 text-center">
+            <p className="text-[11px] text-gray-500 mt-2.5 text-center font-medium">
               Sign in to contact the owner
             </p>
           )}
