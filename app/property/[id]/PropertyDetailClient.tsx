@@ -19,8 +19,19 @@ import {
   ChevronLeft,
   Share2,
   Heart,
+  X,
 } from 'lucide-react';
 import Image from 'next/image';
+import {
+  WhatsappShareButton,
+  FacebookShareButton,
+  TelegramShareButton,
+  LinkedinShareButton,
+  WhatsappIcon,
+  FacebookIcon,
+  TelegramIcon,
+  LinkedinIcon,
+} from 'react-share';
 
 type Property = {
   id: string;
@@ -60,6 +71,8 @@ export function PropertyDetailClient({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
@@ -117,18 +130,13 @@ export function PropertyDetailClient({
   };
 
   const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: property.title,
-          text: `Check out this property: ${property.title}`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.log('Share failed', err);
-      }
-    }
+    setShowShareModal(true);
   };
+
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://yourdomain.com/property/${property.id}`;
+  const shareTitle = `${property.title} - ${property.propertyType.charAt(0).toUpperCase() + property.propertyType.slice(1)} for Rent`;
+  const propertyImage = displayImages && displayImages[0] ? displayImages[0] : '';
+  const shareMessage = `🏠 *${property.title}*\n\n📍 Location: ${property.address}\n💰 Rent: ₹${property.rent.toLocaleString()}/day\n🏷️ Type: ${property.propertyType.charAt(0).toUpperCase() + property.propertyType.slice(1)}\n${property.amenities && property.amenities.length > 0 ? `\n✨ Amenities: ${property.amenities.slice(0, 3).join(', ')}${property.amenities.length > 3 ? '...' : ''}` : ''}${property.status === 'LIVE' && property.verifiedImages?.length ? '\n\n✅ *Verified Property* - Inspected by our team!' : ''}\n${propertyImage ? `\n\n📸 Image: ${propertyImage}` : ''}\n\n👀 View full details and book now:`;
 
   return (
     <div className="min-h-screen bg-[#FFFAF5]">
@@ -148,8 +156,11 @@ export function PropertyDetailClient({
             >
               <Share2 className="w-5 h-5 text-gray-700" />
             </button>
-            <button className="p-2.5 hover:bg-gray-100 rounded-full transition-all active:scale-90 touch-manipulation">
-              <Heart className="w-5 h-5 text-gray-700" />
+            <button 
+              onClick={() => setIsFavorite(!isFavorite)}
+              className="p-2.5 hover:bg-gray-100 rounded-full transition-all active:scale-90 touch-manipulation"
+            >
+              <Heart className={`w-5 h-5 transition-colors ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-700'}`} />
             </button>
           </div>
         </div>
@@ -374,7 +385,7 @@ export function PropertyDetailClient({
 
           {/* Amenities */}
           {property.amenities && property.amenities.length > 0 && (
-            <div className="bg-white md:bg-transparent px-4 md:px-0 py-5 md:py-0 mb-2 md:mb-6">
+            <div className="bg-white md:bg-transparent px-4 md:px-0 py-5 md:py-0 mb-6 md:mb-6">
               <h2 className="text-[17px] md:text-xl font-bold text-gray-900 mb-3.5 flex items-center gap-2.5">
                 <div className="w-1 h-6 bg-[#E86A33] rounded-full md:hidden" />
                 Amenities
@@ -556,6 +567,114 @@ export function PropertyDetailClient({
           )}
         </div>
       </div>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-end md:items-center justify-center p-0 md:p-4" onClick={() => setShowShareModal(false)}>
+          <div className="bg-white rounded-t-3xl md:rounded-2xl w-full md:max-w-md p-6 pb-8 animate-slide-up" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Share Property</h3>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X size={20} className="text-gray-600" />
+              </button>
+            </div>
+
+            {/* Property Preview */}
+            <div className="mb-6 p-4 bg-gradient-to-br from-[#FFFAF5] to-[#FFE5D1] rounded-xl border border-[#E86A33]/20">
+              <div className="flex items-start gap-3">
+                {displayImages && displayImages[0] && (
+                  <img
+                    src={displayImages[0]}
+                    alt={property.title}
+                    className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-gray-900 text-sm mb-1 line-clamp-2">{property.title}</h4>
+                  <p className="text-xs text-gray-600 mb-1 line-clamp-1">{property.address}</p>
+                  <p className="text-sm font-bold text-[#E86A33]">₹{property.rent.toLocaleString()}/day</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Share Buttons */}
+            <div className="space-y-3">
+              <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-4">Share via</p>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <WhatsappShareButton
+                  url={shareUrl}
+                  title={shareMessage}
+                  className="w-full"
+                >
+                  <div className="flex items-center gap-3 p-3 bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 rounded-xl transition-all active:scale-95">
+                    <div className="w-10 h-10 bg-[#25D366] rounded-full flex items-center justify-center flex-shrink-0">
+                      <WhatsappIcon size={24} round />
+                    </div>
+                    <span className="font-semibold text-gray-900 text-sm">WhatsApp</span>
+                  </div>
+                </WhatsappShareButton>
+
+                <FacebookShareButton
+                  url={shareUrl}
+                  hashtag="#PropertyRental"
+                  className="w-full"
+                >
+                  <div className="flex items-center gap-3 p-3 bg-[#1877F2]/10 hover:bg-[#1877F2]/20 border border-[#1877F2]/30 rounded-xl transition-all active:scale-95">
+                    <div className="w-10 h-10 bg-[#1877F2] rounded-full flex items-center justify-center flex-shrink-0">
+                      <FacebookIcon size={24} round />
+                    </div>
+                    <span className="font-semibold text-gray-900 text-sm">Facebook</span>
+                  </div>
+                </FacebookShareButton>
+
+                <TelegramShareButton
+                  url={shareUrl}
+                  title={shareMessage}
+                  className="w-full"
+                >
+                  <div className="flex items-center gap-3 p-3 bg-[#0088cc]/10 hover:bg-[#0088cc]/20 border border-[#0088cc]/30 rounded-xl transition-all active:scale-95">
+                    <div className="w-10 h-10 bg-[#0088cc] rounded-full flex items-center justify-center flex-shrink-0">
+                      <TelegramIcon size={24} round />
+                    </div>
+                    <span className="font-semibold text-gray-900 text-sm">Telegram</span>
+                  </div>
+                </TelegramShareButton>
+
+                <LinkedinShareButton
+                  url={shareUrl}
+                  title={shareTitle}
+                  summary={`${property.title} - ${property.address}. Available for ₹${property.rent.toLocaleString()}/day`}
+                  className="w-full"
+                >
+                  <div className="flex items-center gap-3 p-3 bg-[#0A66C2]/10 hover:bg-[#0A66C2]/20 border border-[#0A66C2]/30 rounded-xl transition-all active:scale-95">
+                    <div className="w-10 h-10 bg-[#0A66C2] rounded-full flex items-center justify-center flex-shrink-0">
+                      <LinkedinIcon size={24} round />
+                    </div>
+                    <span className="font-semibold text-gray-900 text-sm">LinkedIn</span>
+                  </div>
+                </LinkedinShareButton>
+              </div>
+
+              {/* Copy Link */}
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(shareUrl);
+                  alert('Link copied to clipboard!');
+                }}
+                className="w-full flex items-center justify-center gap-3 p-4 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-xl transition-all active:scale-95 mt-4"
+              >
+                <Share2 size={20} className="text-gray-700" />
+                <span className="font-semibold text-gray-900">Copy Link</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

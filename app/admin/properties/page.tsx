@@ -154,12 +154,12 @@ export default function AdminPropertiesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-20">
-      <div className="max-w-7xl mx-auto px-4 py-8 pb-28 md:pb-8">
-        {/* Header Section */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Property Management</h1>
-          <p className="text-gray-600 text-lg">Monitor and manage all property verifications</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 md:pt-20">
+      <div className="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-8 pb-24 md:pb-8">
+        {/* Header Section - Mobile Optimized */}
+        <div className="mb-4 md:mb-8">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-1 md:mb-2">Property Management</h1>
+          <p className="text-gray-600 text-sm md:text-lg">Monitor and manage all property verifications</p>
         </div>
 
         {error && (
@@ -168,35 +168,35 @@ export default function AdminPropertiesPage() {
           </div>
         )}
 
-        {/* Search and Filters - Improved Design */}
-        <div className="mb-6 p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Search & Filter</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Search and Filters - Mobile Optimized */}
+        <div className="mb-4 md:mb-6 p-4 md:p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
+          <h3 className="text-xs md:text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3 md:mb-4">Search & Filter</h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
             {/* Search */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search Properties</label>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">Search Properties</label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                 <Input
                   type="text"
-                  placeholder="Title, address, owner name or email..."
+                  placeholder="Title, address, owner..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-11 py-2.5 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
+                  className="pl-10 py-2.5 text-sm border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg"
                 />
               </div>
             </div>
 
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">Status</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                className="w-full px-3 md:px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
               >
                 <option value="ALL">All Status</option>
-                <option value="PENDING_ADMIN_REVIEW">📋 Pending Review</option>
+                <option value="PENDING_ADMIN_REVIEW">📋 Pending</option>
                 <option value="VERIFICATION_IN_PROGRESS">🔍 In Progress</option>
                 <option value="LIVE">✅ Live</option>
                 <option value="REJECTED">❌ Rejected</option>
@@ -205,11 +205,11 @@ export default function AdminPropertiesPage() {
 
             {/* Property Type Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">Type</label>
               <select
                 value={propertyTypeFilter}
                 onChange={(e) => setPropertyTypeFilter(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                className="w-full px-3 md:px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
               >
                 <option value="ALL">All Types</option>
                 <option value="room">🚪 Room</option>
@@ -220,9 +220,9 @@ export default function AdminPropertiesPage() {
           </div>
 
           {/* Results Info */}
-          <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
-            <p className="text-sm text-gray-600">
-              <span className="font-semibold text-gray-900">{filteredProperties.length}</span> properties found
+          <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <p className="text-xs md:text-sm text-gray-600">
+              <span className="font-semibold text-gray-900">{filteredProperties.length}</span> properties
               {searchTerm || statusFilter !== 'ALL' || propertyTypeFilter !== 'ALL' ? (
                 <span className="ml-1 text-blue-600">(filtered)</span>
               ) : ''}
@@ -236,114 +236,157 @@ export default function AdminPropertiesPage() {
                   setStatusFilter('ALL');
                   setPropertyTypeFilter('ALL');
                 }}
-                className="text-sm hover:bg-red-50 hover:text-red-600 hover:border-red-300"
+                className="text-xs md:text-sm hover:bg-red-50 hover:text-red-600 hover:border-red-300 h-8"
               >
-                Clear All Filters
+                Clear Filters
               </Button>
             )}
           </div>
         </div>
 
-      {/* Summary Cards - Enhanced */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      {/* Summary Cards - Mobile Optimized */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
         <button
           onClick={() => setStatusFilter('PENDING_ADMIN_REVIEW')}
-          className={`group p-6 border-2 rounded-xl text-left transition-all transform hover:scale-105 hover:shadow-lg ${
+          className={`group p-4 md:p-6 border-2 rounded-xl text-left transition-all transform hover:scale-105 hover:shadow-lg ${
             statusFilter === 'PENDING_ADMIN_REVIEW' 
               ? 'bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-400 shadow-md' 
               : 'bg-white border-gray-200 hover:border-yellow-300'
           }`}
         >
-          <div className="flex items-center justify-between mb-2">
-            <Clock className={`${statusFilter === 'PENDING_ADMIN_REVIEW' ? 'text-yellow-600' : 'text-yellow-500'}`} size={24} />
+          <div className="flex items-center justify-between mb-1.5 md:mb-2">
+            <Clock className={`${statusFilter === 'PENDING_ADMIN_REVIEW' ? 'text-yellow-600' : 'text-yellow-500'}`} size={20} />
             {pendingProperties.length > 0 && (
-              <span className="px-2 py-1 bg-yellow-500 text-white text-xs font-bold rounded-full animate-pulse">
+              <span className="px-1.5 py-0.5 bg-yellow-500 text-white text-[10px] font-bold rounded-full animate-pulse">
                 {pendingProperties.length}
               </span>
             )}
           </div>
-          <p className="text-sm font-semibold text-gray-600 mb-1">Pending Review</p>
-          <p className="text-3xl font-bold text-gray-900">{pendingProperties.length}</p>
-          <p className="text-xs text-gray-500 mt-1">Needs attention</p>
+          <p className="text-[10px] md:text-sm font-semibold text-gray-600 mb-0.5 md:mb-1">Pending</p>
+          <p className="text-xl md:text-3xl font-bold text-gray-900">{pendingProperties.length}</p>
+          <p className="text-[9px] md:text-xs text-gray-500 mt-0.5 md:mt-1 hidden md:block">Needs attention</p>
         </button>
 
         <button
           onClick={() => setStatusFilter('VERIFICATION_IN_PROGRESS')}
-          className={`group p-6 border-2 rounded-xl text-left transition-all transform hover:scale-105 hover:shadow-lg ${
+          className={`group p-4 md:p-6 border-2 rounded-xl text-left transition-all transform hover:scale-105 hover:shadow-lg ${
             statusFilter === 'VERIFICATION_IN_PROGRESS' 
               ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-400 shadow-md' 
               : 'bg-white border-gray-200 hover:border-blue-300'
           }`}
         >
-          <div className="flex items-center justify-between mb-2">
-            <FileSearch className={`${statusFilter === 'VERIFICATION_IN_PROGRESS' ? 'text-blue-600' : 'text-blue-500'}`} size={24} />
+          <div className="flex items-center justify-between mb-1.5 md:mb-2">
+            <FileSearch className={`${statusFilter === 'VERIFICATION_IN_PROGRESS' ? 'text-blue-600' : 'text-blue-500'}`} size={20} />
             {inProgressProperties.length > 0 && (
-              <span className="px-2 py-1 bg-blue-500 text-white text-xs font-bold rounded-full">
+              <span className="px-1.5 py-0.5 bg-blue-500 text-white text-[10px] font-bold rounded-full">
                 {inProgressProperties.length}
               </span>
             )}
           </div>
-          <p className="text-sm font-semibold text-gray-600 mb-1">In Verification</p>
-          <p className="text-3xl font-bold text-gray-900">{inProgressProperties.length}</p>
-          <p className="text-xs text-gray-500 mt-1">Being verified</p>
+          <p className="text-[10px] md:text-sm font-semibold text-gray-600 mb-0.5 md:mb-1">Progress</p>
+          <p className="text-xl md:text-3xl font-bold text-gray-900">{inProgressProperties.length}</p>
+          <p className="text-[9px] md:text-xs text-gray-500 mt-0.5 md:mt-1 hidden md:block">Being verified</p>
         </button>
 
         <button
           onClick={() => setStatusFilter('LIVE')}
-          className={`group p-6 border-2 rounded-xl text-left transition-all transform hover:scale-105 hover:shadow-lg ${
+          className={`group p-4 md:p-6 border-2 rounded-xl text-left transition-all transform hover:scale-105 hover:shadow-lg ${
             statusFilter === 'LIVE' 
               ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-400 shadow-md' 
               : 'bg-white border-gray-200 hover:border-green-300'
           }`}
         >
-          <div className="flex items-center justify-between mb-2">
-            <CheckCircle className={`${statusFilter === 'LIVE' ? 'text-green-600' : 'text-green-500'}`} size={24} />
+          <div className="flex items-center justify-between mb-1.5 md:mb-2">
+            <CheckCircle className={`${statusFilter === 'LIVE' ? 'text-green-600' : 'text-green-500'}`} size={20} />
             {liveProperties.length > 0 && (
-              <span className="px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-full">
+              <span className="px-1.5 py-0.5 bg-green-500 text-white text-[10px] font-bold rounded-full">
                 {liveProperties.length}
               </span>
             )}
           </div>
-          <p className="text-sm font-semibold text-gray-600 mb-1">Live</p>
-          <p className="text-3xl font-bold text-gray-900">{liveProperties.length}</p>
-          <p className="text-xs text-gray-500 mt-1">Active listings</p>
+          <p className="text-[10px] md:text-sm font-semibold text-gray-600 mb-0.5 md:mb-1">Live</p>
+          <p className="text-xl md:text-3xl font-bold text-gray-900">{liveProperties.length}</p>
+          <p className="text-[9px] md:text-xs text-gray-500 mt-0.5 md:mt-1 hidden md:block">Active listings</p>
         </button>
 
         <button
           onClick={() => setStatusFilter('REJECTED')}
-          className={`group p-6 border-2 rounded-xl text-left transition-all transform hover:scale-105 hover:shadow-lg ${
+          className={`group p-4 md:p-6 border-2 rounded-xl text-left transition-all transform hover:scale-105 hover:shadow-lg ${
             statusFilter === 'REJECTED' 
               ? 'bg-gradient-to-br from-red-50 to-red-100 border-red-400 shadow-md' 
               : 'bg-white border-gray-200 hover:border-red-300'
           }`}
         >
-          <div className="flex items-center justify-between mb-2">
-            <XCircle className={`${statusFilter === 'REJECTED' ? 'text-red-600' : 'text-red-500'}`} size={24} />
+          <div className="flex items-center justify-between mb-1.5 md:mb-2">
+            <XCircle className={`${statusFilter === 'REJECTED' ? 'text-red-600' : 'text-red-500'}`} size={20} />
             {rejectedProperties.length > 0 && (
-              <span className="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
+              <span className="px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
                 {rejectedProperties.length}
               </span>
             )}
           </div>
-          <p className="text-sm font-semibold text-gray-600 mb-1">Rejected</p>
-          <p className="text-3xl font-bold text-gray-900">{rejectedProperties.length}</p>
-          <p className="text-xs text-gray-500 mt-1">Not approved</p>
+          <p className="text-[10px] md:text-sm font-semibold text-gray-600 mb-0.5 md:mb-1">Rejected</p>
+          <p className="text-xl md:text-3xl font-bold text-gray-900">{rejectedProperties.length}</p>
+          <p className="text-[9px] md:text-xs text-gray-500 mt-0.5 md:mt-1 hidden md:block">Not approved</p>
         </button>
         </div>
 
       {/* Pending Review Properties - First Priority */}
       {pendingProperties.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <Clock className="text-yellow-600" size={24} />
+        <div className="mb-6 md:mb-8">
+          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+            <div className="p-1.5 md:p-2 bg-yellow-100 rounded-lg">
+              <Clock className="text-yellow-600" size={20} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Pending Review</h2>
-              <p className="text-sm text-gray-600">{pendingProperties.length} properties awaiting assignment</p>
+              <h2 className="text-lg md:text-2xl font-bold text-gray-900">Pending Review</h2>
+              <p className="text-xs md:text-sm text-gray-600">{pendingProperties.length} properties awaiting assignment</p>
             </div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-3">
+            {pendingProperties.slice(0, 10).map((property) => (
+              <div key={property.id} className="bg-white rounded-xl border-2 border-yellow-200 shadow-sm p-4 hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-900 text-sm mb-1 line-clamp-1">{property.title}</h3>
+                    <p className="text-xs text-gray-500 line-clamp-1">{property.address}</p>
+                  </div>
+                  <span className="ml-2 px-2 py-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 rounded-full text-[10px] font-semibold capitalize flex-shrink-0">
+                    {property.propertyType}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+                  <div>
+                    <p className="text-gray-500 mb-0.5">Owner</p>
+                    <p className="font-medium text-gray-900 truncate">{property.owner?.name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 mb-0.5">Rent</p>
+                    <p className="font-bold text-green-700">₹{property.rent.toLocaleString()}<span className="text-[10px] text-gray-500">/day</span></p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                  <div className="text-xs">
+                    <span className="text-gray-500">Submitted </span>
+                    <span className="font-semibold text-yellow-600">{calculateDaysElapsed(property.createdAt, null)}d ago</span>
+                  </div>
+                  <Link href={`/admin/edit/${property.id}`}>
+                    <Button size="sm" className="flex items-center gap-1.5 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 h-8 text-xs">
+                      <Edit size={12} />
+                      Review
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-yellow-200">
@@ -380,7 +423,7 @@ export default function AdminPropertiesPage() {
                       </td>
                       <td className="p-4">
                         <span className="font-bold text-green-700">₹{property.rent.toLocaleString()}</span>
-                        <span className="text-xs text-gray-500">/mo</span>
+                        <span className="text-xs text-gray-500">/day</span>
                       </td>
                       <td className="p-4">
                         <div className="text-sm font-medium text-gray-700">
@@ -409,17 +452,91 @@ export default function AdminPropertiesPage() {
 
       {/* All Properties Table */}
       {currentInProgressProperties.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <FileSearch className="text-blue-600" size={24} />
+        <div className="mb-6 md:mb-8">
+          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+            <div className="p-1.5 md:p-2 bg-blue-100 rounded-lg">
+              <FileSearch className="text-blue-600" size={20} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Verification In Progress</h2>
-              <p className="text-sm text-gray-600">{inProgressProperties.length} properties being verified</p>
+              <h2 className="text-lg md:text-2xl font-bold text-gray-900">Verification In Progress</h2>
+              <p className="text-xs md:text-sm text-gray-600">{inProgressProperties.length} properties being verified</p>
             </div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-3">
+            {currentInProgressProperties.map((property) => {
+              const daysElapsed = calculateDaysElapsed(property.createdAt, property.verificationStartDate);
+              const estimatedDays = property.estimatedDays || 0;
+              const isOverdue = estimatedDays > 0 && daysElapsed > estimatedDays;
+              
+              return (
+                <div key={property.id} className="bg-white rounded-xl border-2 border-blue-200 shadow-sm p-4 hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-gray-900 text-sm mb-1 line-clamp-1">{property.title}</h3>
+                      <p className="text-xs text-gray-500 line-clamp-1">{property.address}</p>
+                    </div>
+                    <span className="ml-2 px-2 py-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 rounded-full text-[10px] font-semibold capitalize flex-shrink-0">
+                      {property.propertyType}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+                    <div>
+                      <p className="text-gray-500 mb-0.5">Owner</p>
+                      <p className="font-medium text-gray-900 truncate">{property.owner?.name || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 mb-0.5">Rent</p>
+                      <p className="font-bold text-green-700">₹{property.rent.toLocaleString()}<span className="text-[10px] text-gray-500">/day</span></p>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-3 p-2 bg-blue-50 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-blue-700 font-bold text-[10px]">
+                          {property.assignedVerifier?.[0]?.toUpperCase() || '?'}
+                        </span>
+                      </div>
+                      <p className="font-semibold text-blue-700 text-xs truncate">{property.assignedVerifier || 'Not assigned'}</p>
+                    </div>
+                    {estimatedDays > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[10px]">
+                          <span className={isOverdue ? 'text-red-600 font-semibold' : 'text-gray-600'}>Progress: {daysElapsed}/{estimatedDays} days</span>
+                          {isOverdue && <span className="text-red-600 font-semibold">⚠ Overdue</span>}
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div 
+                            className={`h-1.5 rounded-full transition-all ${isOverdue ? 'bg-red-500' : 'bg-blue-500'}`}
+                            style={{ width: `${Math.min((daysElapsed / estimatedDays) * 100, 100)}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <div className="text-xs">
+                      <span className="text-gray-500">Started </span>
+                      <span className="font-semibold text-blue-600">{daysElapsed}d ago</span>
+                    </div>
+                    <Link href={`/admin/edit/${property.id}`}>
+                      <Button size="sm" className="flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 h-8 text-xs">
+                        <Edit size={12} />
+                        Manage
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
@@ -584,17 +701,65 @@ export default function AdminPropertiesPage() {
 
       {/* Live Properties Table */}
       {currentLiveProperties.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CheckCircle className="text-green-600" size={24} />
+        <div className="mb-6 md:mb-8">
+          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+            <div className="p-1.5 md:p-2 bg-green-100 rounded-lg">
+              <CheckCircle className="text-green-600" size={20} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Live Properties</h2>
-              <p className="text-sm text-gray-600">{liveProperties.length} active listings</p>
+              <h2 className="text-lg md:text-2xl font-bold text-gray-900">Live Properties</h2>
+              <p className="text-xs md:text-sm text-gray-600">{liveProperties.length} active listings</p>
             </div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-3">
+            {currentLiveProperties.map((property) => (
+              <div key={property.id} className="bg-white rounded-xl border-2 border-green-200 shadow-sm p-4 hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-900 text-sm mb-1 line-clamp-1">{property.title}</h3>
+                    <p className="text-xs text-gray-500 line-clamp-1">{property.address}</p>
+                  </div>
+                  <span className="ml-2 px-2 py-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 rounded-full text-[10px] font-semibold capitalize flex-shrink-0">
+                    {property.propertyType}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+                  <div>
+                    <p className="text-gray-500 mb-0.5">Owner</p>
+                    <p className="font-medium text-gray-900 truncate">{property.owner?.name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 mb-0.5">Rent</p>
+                    <p className="font-bold text-green-700">₹{property.rent.toLocaleString()}<span className="text-[10px] text-gray-500">/day</span></p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-1.5 mb-3 px-2 py-1.5 bg-green-50 rounded-lg">
+                  <CheckCircle size={14} className="text-green-600 flex-shrink-0" />
+                  <span className="text-xs font-semibold text-green-700">Verified & Live</span>
+                </div>
+                
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                  <div className="text-xs">
+                    <span className="text-gray-500">Approved </span>
+                    <span className="font-semibold text-green-600">{calculateDaysElapsed(property.createdAt, null)}d ago</span>
+                  </div>
+                  <Link href={`/admin/edit/${property.id}`}>
+                    <Button size="sm" variant="outline" className="flex items-center gap-1.5 hover:bg-green-50 hover:border-green-300 hover:text-green-700 h-8 text-xs">
+                      <Edit size={12} />
+                      Manage
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">

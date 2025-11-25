@@ -17,10 +17,9 @@ export function Navbar() {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   
-  // Hide navbar on mobile for explore page
-  const isExplorePage = pathname?.startsWith('/explore') || false;
+  // Hide navbar on mobile for all pages except landing
   const isLandingPage = pathname === '/' || false;
-  const shouldHideOnMobile = isExplorePage;
+  const shouldHideOnMobile = !isLandingPage; // Hide on all pages except landing
   const shouldShowSidebar = isLandingPage;
 
   useEffect(() => {
